@@ -5,7 +5,7 @@ A FastAPI + MongoDB REST API for employee attendance tracking, punch-in/out, man
 ## Requirements
 
 - Python 3.11+
-- MongoDB 6.0+ (or Atlas M0 free tier)
+- MongoDB 6.0+ 
 
 ## Local Setup
 
@@ -13,7 +13,7 @@ A FastAPI + MongoDB REST API for employee attendance tracking, punch-in/out, man
 python -m venv .venv
 # Windows:
 .venv\Scripts\activate
-# macOS/Linux:
+# Linux:
 source .venv/bin/activate
 
 pip install -r requirements.txt
