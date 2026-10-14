@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chronos — Enterprise Attendance & Analytics Platform</title>
+  <meta name="description" content="Production-grade Employee Attendance Tracking, Business Rules Engine, Audit Trails, and Real-time MongoDB Aggregation Analytics.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/index.css">
+  <link rel="icon" type="image/jpeg" href="/static/assets/logo.jpg">
+</head>
+<body>
+  <!-- Ambient background glow elements -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <header class="navbar" id="mainNavbar">
+    <div class="nav-container">
+      <div class="brand">
+        <img src="/static/assets/logo.jpg" alt="Chronos Logo" class="brand-logo" id="brandLogo">
+        <div class="brand-text">
+          <span class="brand-title">CHRONOS</span>
+          <span class="brand-subtitle">Attendance & Analytics</span>
+        </div>
+      </div>
+
+      <nav class="nav-links">
+        <button class="nav-btn active" data-tab="punch" id="navPunchBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          Punch Station
+        </button>
+        <button class="nav-btn" data-tab="attendance" id="navAttendanceBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          Attendance Logs
+        </button>
+        <button class="nav-btn" data-tab="analytics" id="navAnalyticsBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"></path><path d="M12 20V4"></path><path d="M6 20v-6"></path></svg>
+          Analytics Dashboard
+        </button>
+        <button class="nav-btn" data-tab="employees" id="navEmployeesBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          Employees
+        </button>
+        <button class="nav-btn" data-tab="explain" id="navExplainBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          DB Explain
+        </button>
+      </nav>
+
+      <div class="nav-status-group">
+        <div class="live-clock-badge" id="liveClockBadge">
+          <span class="live-dot"></span>
+          <span id="liveIstTime">--:--:-- IST</span>
+        </div>
+        <div class="system-health-badge" id="dbHealthBadge" title="MongoDB Connection Status">
+          <span class="health-indicator online" id="healthIndicator"></span>
+          <span id="healthStatusText">DB Ready</span>
+        </div>
+        <a href="/docs" target="_blank" class="docs-btn" id="apiDocsBtn" title="Interactive Swagger Docs">
+          Swagger API
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Quick Hero Stats Bar -->
+    <section class="stats-overview-grid" id="statsOverviewGrid">
+      <div class="stat-card">
+        <div class="stat-icon-wrapper cyan">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Active Headcount</div>
+          <div class="stat-value" id="headcountStat">6</div>
+          <div class="stat-subtext">Across 3 Departments</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon-wrapper emerald">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Attendance Rate</div>
+          <div class="stat-value" id="attRateStat">--%</div>
+          <div class="stat-subtext">Current Month (IST)</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon-wrapper amber">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Late Incidents</div>
+          <div class="stat-value" id="lateIncidentsStat">0</div>
+          <div class="stat-subtext">> 10 min grace rule</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon-wrapper violet">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Total Overtime</div>
+          <div class="stat-value" id="overtimeStat">0 min</div>
+          <div class="stat-subtext">>= 30 min threshold</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 1: PUNCH TERMINAL -->
+    <section class="tab-pane active" id="pane-punch">
+      <div class="punch-layout-grid">
+        <!-- Punch Controller Card -->
+        <div class="glass-card punch-action-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <h2 class="card-title">Virtual Biometric Terminal</h2>
+              <p class="card-subtitle">Execute punch-in & punch-out transactions strictly validated against business rules R1–R5.</p>
+            </div>
+            <span class="badge badge-emerald">IST Timezone Active</span>
+          </div>
+
+          <form id="punchForm" class="punch-form">
+            <div class="form-group">
+              <label for="punchEmpCode" class="form-label">Select Employee</label>
+              <div class="select-wrapper">
+                <select id="punchEmpCode" class="form-select" required>
+                  <option value="">-- Choose Employee --</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Employee Quick Card -->
+            <div class="emp-profile-preview" id="empProfilePreview">
+              <div class="profile-avatar" id="empAvatar">--</div>
+              <div class="profile-info">
+                <div class="profile-name" id="empName">Select an employee</div>
+                <div class="profile-meta" id="empMeta">Department & Shift will appear here</div>
+              </div>
+              <div class="shift-tag" id="empShiftTag">--:-- to --:--</div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="punchStatus" class="form-label">Punch Status</label>
+                <select id="punchStatus" class="form-select">
+                  <option value="PRESENT" selected>PRESENT (Office)</option>
+                  <option value="WFH">WFH (Work From Home)</option>
+                  <option value="ON_DUTY">ON DUTY (Client/Field)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="punchModeToggle" class="form-label">Timestamp Mode</label>
+                <select id="punchModeToggle" class="form-select">
+                  <option value="now">Real-time (Now in IST)</option>
+                  <option value="custom">Custom Timestamp (Test scenario)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group custom-ts-group hidden" id="customTsGroup">
+              <label for="customDateTimeInput" class="form-label">Custom Date & Time (IST)</label>
+              <input type="datetime-local" id="customDateTimeInput" class="form-input">
+              <small class="form-hint">Used for simulating overnight shifts (EMP0005) or specific late/overtime thresholds.</small>
+            </div>
+
+            <div class="punch-action-buttons">
+              <button type="button" class="btn btn-emerald btn-lg" id="btnPunchIn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                Punch IN
+              </button>
+              <button type="button" class="btn btn-cyan btn-lg" id="btnPunchOut">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                Punch OUT
+              </button>
+            </div>
+          </form>
+
+          <!-- Live Rule Explanations -->
+          <div class="rules-summary-box">
+            <div class="rule-chip"><span class="rule-num">R1</span> Overnight Shift Attribution</div>
+            <div class="rule-chip"><span class="rule-num">R2</span> > 10m Grace Period</div>
+            <div class="rule-chip"><span class="rule-num">R3</span> >= 30m Overtime</div>
+            <div class="rule-chip"><span class="rule-num">R4</span> Half-Up Rounding</div>
+            <div class="rule-chip"><span class="rule-num">R5</span> &lt; 4.5h Half Day</div>
+          </div>
+        </div>
+
+        <!-- Today's Live Attendance Feed Card -->
+        <div class="glass-card punch-feed-card">
+          <div class="card-header">
+            <h3 class="card-title">Recent Punches & Today's State</h3>
+            <button class="btn btn-sm btn-ghost" id="refreshFeedBtn" title="Refresh">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            </button>
+          </div>
+          <div class="punch-feed-list" id="punchFeedList">
+            <div class="loading-spinner">Loading latest activity...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: ATTENDANCE LOGS & AUDIT TRAILS -->
+    <section class="tab-pane" id="pane-attendance">
+      <div class="glass-card">
+        <div class="card-header filter-header">
+          <div class="card-title-group">
+            <h2 class="card-title">Attendance Records & Audit Trails</h2>
+            <p class="card-subtitle">Paginated, filterable by date range, department, employee code, and presence status.</p>
+          </div>
+          <div class="filter-actions">
+            <button class="btn btn-sm btn-outline" id="resetFiltersBtn">Reset Filters</button>
+          </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="filter-bar-grid">
+          <div class="form-group">
+            <label for="filterEmpCode" class="form-label">Employee Code</label>
+            <input type="text" id="filterEmpCode" class="form-input" placeholder="e.g. EMP0001">
+          </div>
+          <div class="form-group">
+            <label for="filterDateFrom" class="form-label">From Date</label>
+            <input type="date" id="filterDateFrom" class="form-input">
+          </div>
+          <div class="form-group">
+            <label for="filterDateTo" class="form-label">To Date</label>
+            <input type="date" id="filterDateTo" class="form-input">
+          </div>
+          <div class="form-group">
+            <label for="filterStatus" class="form-label">Status</label>
+            <select id="filterStatus" class="form-select">
+              <option value="">All Statuses</option>
+              <option value="PRESENT">PRESENT</option>
+              <option value="WFH">WFH</option>
+              <option value="ON_DUTY">ON_DUTY</option>
+              <option value="ABSENT">ABSENT</option>
+              <option value="LEAVE">LEAVE</option>
+            </select>
+          </div>
+          <div class="form-group filter-btn-col">
+            <button class="btn btn-primary" id="applyFilterBtn">Apply Filters</button>
+          </div>
+        </div>
+
+        <!-- Attendance Records Table -->
+        <div class="table-container">
+          <table class="data-table" id="attendanceTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Employee</th>
+                <th>Status</th>
+                <th>Punch In (IST)</th>
+                <th>Punch Out (IST)</th>
+                <th>Work Hours</th>
+                <th>Late (min)</th>
+                <th>Overtime (min)</th>
+                <th>Half Day</th>
+                <th>Audit History</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="attendanceTableBody">
+              <tr>
+                <td colspan="11" class="text-center py-4">Loading attendance records...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination Bar -->
+        <div class="pagination-footer">
+          <div class="pagination-info" id="paginationInfo">Showing 0 of 0 records</div>
+          <div class="pagination-controls">
+            <button class="btn btn-sm btn-outline" id="prevPageBtn" disabled>Previous</button>
+            <span class="current-page-badge" id="currentPageBadge">Page 1</span>
+            <button class="btn btn-sm btn-outline" id="nextPageBtn" disabled>Next</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: ANALYTICS DASHBOARD -->
+    <section class="tab-pane" id="pane-analytics">
+      <!-- Analytics Control Bar -->
+      <div class="analytics-control-bar glass-card">
+        <div class="analytics-filter-group">
+          <label for="analyticsMonth" class="form-label">Reporting Month</label>
+          <input type="month" id="analyticsMonth" class="form-input" value="2026-07">
+        </div>
+        <div class="analytics-filter-group">
+          <label for="analyticsDeptSelect" class="form-label">Department Scope</label>
+          <select id="analyticsDeptSelect" class="form-select">
+            <option value="">All Departments</option>
+            <option value="Engineering">Engineering</option>
+            <option value="Sales">Sales</option>
+            <option value="Support">Support</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" id="refreshAnalyticsBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+          Update Analytics
+        </button>
+      </div>
+
+      <!-- Department Summary Cards Grid -->
+      <div class="analytics-section-title">
+        <h3>Department Monthly Aggregations (Rule R9 Headcount Inclusion)</h3>
+      </div>
+      <div class="dept-summary-grid" id="deptSummaryGrid">
+        <div class="loading-spinner">Loading department analytics...</div>
+      </div>
+
+      <!-- Analytics Row: Trend Chart & Late Leaderboard -->
+      <div class="analytics-split-grid">
+        <!-- Trend Chart Card -->
+        <div class="glass-card trend-chart-card">
+          <div class="card-header chart-header">
+            <div>
+              <h3 class="card-title">Daily Attendance Trend & 7-Day Moving Average</h3>
+              <p class="card-subtitle">Gap-filled using MongoDB $densify pipeline</p>
+            </div>
+            <div class="chart-dept-picker">
+              <select id="trendDeptPicker" class="form-select form-select-sm">
+                <option value="Engineering" selected>Engineering</option>
+                <option value="Sales">Sales</option>
+                <option value="Support">Support</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="chart-canvas-container" id="trendChartContainer">
+            <svg id="trendSvgChart" viewBox="0 0 800 320" class="trend-svg"></svg>
+          </div>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-dot cyan"></span> Daily Attendance Rate</span>
+            <span class="legend-item"><span class="legend-line emerald"></span> 7-Day Moving Average</span>
+            <span class="legend-item"><span class="legend-rect weekend"></span> Weekend (Non-working)</span>
+          </div>
+        </div>
+
+        <!-- Late Comers Leaderboard -->
+        <div class="glass-card late-leaderboard-card">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">Late-Comers Leaderboard</h3>
+              <p class="card-subtitle">Standard Competition Ranking ($rank with ties)</p>
+            </div>
+            <span class="badge badge-amber" id="leaderboardLimitBadge">Top 10</span>
+          </div>
+
+          <div class="leaderboard-list" id="lateLeaderboardList">
+            <div class="loading-spinner">Loading leaderboard...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Employee Monthly Drilldown -->
+      <div class="glass-card emp-monthly-drilldown-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <h3 class="card-title">Individual Employee Monthly Summary (Rules R7, R8)</h3>
+            <p class="card-subtitle">Calculate effective working days (Mon–Fri on or after joined_on) and attendance percentage.</p>
+          </div>
+          <div class="drilldown-controls">
+            <select id="drilldownEmpCode" class="form-select form-select-sm"></select>
+          </div>
+        </div>
+
+        <div class="drilldown-stats-grid" id="drilldownStatsGrid">
+          <div class="drilldown-stat-box">
+            <span class="label">Attendance %</span>
+            <span class="value cyan" id="ddAttPct">--%</span>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" id="ddAttProgress"></div></div>
+          </div>
+          <div class="drilldown-stat-box">
+            <span class="label">Working Days (R7)</span>
+            <span class="value" id="ddWorkingDays">--</span>
+            <span class="subtext">Mon–Fri since join</span>
+          </div>
+          <div class="drilldown-stat-box">
+            <span class="label">Present Days</span>
+            <span class="value emerald" id="ddPresentDays">--</span>
+            <span class="subtext">0.5 for half day</span>
+          </div>
+          <div class="drilldown-stat-box">
+            <span class="label">Leave Days</span>
+            <span class="value amber" id="ddLeaveDays">--</span>
+            <span class="subtext">Approved leave</span>
+          </div>
+          <div class="drilldown-stat-box">
+            <span class="label">Late Count & Min</span>
+            <span class="value rose" id="ddLateInfo">--</span>
+            <span class="subtext">> 10 min grace</span>
+          </div>
+          <div class="drilldown-stat-box">
+            <span class="label">Total Overtime</span>
+            <span class="value violet" id="ddOtMinutes">--</span>
+            <span class="subtext">Minutes logged</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: EMPLOYEES DIRECTORY -->
+    <section class="tab-pane" id="pane-employees">
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <h2 class="card-title">Employee Directory & Shift Roster</h2>
+            <p class="card-subtitle">Manage company workforce, standard work hours, and overnight shift configurations.</p>
+          </div>
+          <button class="btn btn-primary" id="openNewEmpModalBtn">+ Add Employee</button>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Department</th>
+                <th>Shift Window</th>
+                <th>Shift Type</th>
+                <th>Joined On</th>
+                <th>Created (Epoch ms)</th>
+              </tr>
+            </thead>
+            <tbody id="employeesTableBody">
+              <tr>
+                <td colspan="8" class="text-center py-4">Loading employee directory...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: MONGODB EXPLAIN QUERY INSPECTOR -->
+    <section class="tab-pane" id="pane-explain">
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <h2 class="card-title">MongoDB Query Plan & Explain Inspector</h2>
+            <p class="card-subtitle">Inspect MongoDB query execution plans, index scans (IXSCAN), and stage stats via <code>/admin/explain/{endpoint}</code>.</p>
+          </div>
+        </div>
+
+        <div class="explain-controls-grid">
+          <div class="form-group">
+            <label for="explainEndpointSelect" class="form-label">Endpoint</label>
+            <select id="explainEndpointSelect" class="form-select">
+              <option value="attendance_list">GET /attendance (attendance_list)</option>
+              <option value="employee_monthly">GET /analytics/employees/{emp}/monthly</option>
+              <option value="department_summary">GET /analytics/departments/summary</option>
+              <option value="late_leaderboard">GET /analytics/leaderboard/late</option>
+              <option value="department_trend">GET /analytics/departments/{dept}/trend</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="explainDeptInput" class="form-label">Department (Optional)</label>
+            <input type="text" id="explainDeptInput" class="form-input" value="Engineering">
+          </div>
+
+          <div class="form-group">
+            <label for="explainMonthInput" class="form-label">Month</label>
+            <input type="month" id="explainMonthInput" class="form-input" value="2026-07">
+          </div>
+
+          <div class="form-group filter-btn-col">
+            <button class="btn btn-primary" id="runExplainBtn">Run Explain Query</button>
+          </div>
+        </div>
+
+        <!-- Explain Plan Summary Box -->
+        <div class="explain-summary-panel" id="explainSummaryPanel">
+          <div class="summary-metric">
+            <span class="metric-label">Collection</span>
+            <span class="metric-value" id="expCollection">--</span>
+          </div>
+          <div class="summary-metric">
+            <span class="metric-label">Stage Execution</span>
+            <span class="metric-value" id="expStage">--</span>
+          </div>
+          <div class="summary-metric">
+            <span class="metric-label">Winning Plan Index</span>
+            <span class="metric-value highlight" id="expIndexName">--</span>
+          </div>
+        </div>
+
+        <!-- Full JSON viewer -->
+        <div class="code-viewer-container">
+          <div class="code-viewer-header">
+            <span>Raw Explain Output (BSON Sanitized)</span>
+            <button class="btn btn-sm btn-ghost" id="copyExplainJsonBtn">Copy JSON</button>
+          </div>
+          <pre class="code-pre" id="explainJsonPre">Select an endpoint and click "Run Explain Query" to view MongoDB execution plan.</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL: REGULARIZE ATTENDANCE -->
+  <div class="modal-overlay hidden" id="regularizeModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Regularize Attendance Record</h3>
+        <button class="modal-close-btn" id="closeRegularizeModalBtn">&times;</button>
+      </div>
+      <form id="regularizeForm" class="modal-body">
+        <input type="hidden" id="regEmpCode">
+        <input type="hidden" id="regDate">
+
+        <div class="modal-record-meta" id="regRecordMeta">
+          Loading record details...
+        </div>
+
+        <div class="form-group">
+          <label for="regStatus" class="form-label">Status</label>
+          <select id="regStatus" class="form-select">
+            <option value="PRESENT">PRESENT</option>
+            <option value="WFH">WFH</option>
+            <option value="ON_DUTY">ON_DUTY</option>
+            <option value="ABSENT">ABSENT</option>
+            <option value="LEAVE">LEAVE</option>
+          </select>
+        </div>
+
+        <div class="form-row" id="regTimeInputsRow">
+          <div class="form-group">
+            <label for="regPunchInTime" class="form-label">Punch In Time (IST)</label>
+            <input type="time" id="regPunchInTime" class="form-input" step="1">
+          </div>
+          <div class="form-group">
+            <label for="regPunchOutTime" class="form-label">Punch Out Time (IST)</label>
+            <input type="time" id="regPunchOutTime" class="form-input" step="1">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="regReason" class="form-label">Reason for Correction (5–200 characters) *</label>
+          <textarea id="regReason" class="form-textarea" required minlength="5" maxlength="200" placeholder="e.g. Biometric scanner malfunction at main turnstile"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="regBy" class="form-label">Regularized By (HR / Admin identifier) *</label>
+          <input type="text" id="regBy" class="form-input" required placeholder="e.g. hr.admin">
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" id="cancelRegBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="submitRegBtn">Save with Audit Trail</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD EMPLOYEE -->
+  <div class="modal-overlay hidden" id="addEmpModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Create New Employee</h3>
+        <button class="modal-close-btn" id="closeAddEmpModalBtn">&times;</button>
+      </div>
+      <form id="addEmpForm" class="modal-body">
+        <div class="form-group">
+          <label for="newEmpCode" class="form-label">Employee Code *</label>
+          <input type="text" id="newEmpCode" class="form-input" required pattern="^EMP\d{4,6}$" placeholder="e.g. EMP0007">
+          <small class="form-hint">Format: EMP followed by 4 to 6 digits</small>
+        </div>
+
+        <div class="form-group">
+          <label for="newEmpName" class="form-label">Full Name *</label>
+          <input type="text" id="newEmpName" class="form-input" required maxlength="100" placeholder="e.g. Priyanshu Sharma">
+        </div>
+
+        <div class="form-group">
+          <label for="newEmpEmail" class="form-label">Email Address *</label>
+          <input type="email" id="newEmpEmail" class="form-input" required maxlength="120" placeholder="e.g. priyanshu@example.com">
+        </div>
+
+        <div class="form-group">
+          <label for="newEmpDept" class="form-label">Department *</label>
+          <input type="text" id="newEmpDept" class="form-input" required maxlength="50" placeholder="e.g. Engineering">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="newShiftStart" class="form-label">Shift Start (HH:MM)</label>
+            <input type="text" id="newShiftStart" class="form-input" value="09:30" pattern="^([01]\d|2[0-3]):[0-5]\d$">
+          </div>
+          <div class="form-group">
+            <label for="newShiftEnd" class="form-label">Shift End (HH:MM)</label>
+            <input type="text" id="newShiftEnd" class="form-input" value="18:30" pattern="^([01]\d|2[0-3]):[0-5]\d$">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="newJoinedOn" class="form-label">Joined On (YYYY-MM-DD) *</label>
+          <input type="date" id="newJoinedOn" class="form-input" required value="2026-07-01">
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" id="cancelAddEmpBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="submitAddEmpBtn">Create Employee</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
