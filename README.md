@@ -28,7 +28,7 @@ python sample_seed.py
 uvicorn app.main:app --port 8000 --reload
 ```
 
-- **Interactive API Swagger Docs**: `http://localhost:8000/docs`
+
 - **Chronos Web Portal & Analytics Dashboard**: `http://localhost:8000/`
 
 ## Chronos Web Dashboard (Frontend)
